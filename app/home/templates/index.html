@@ -1,0 +1,134 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content">
+            <!-- [ breadcrumb ] start -->
+
+            <!-- [ breadcrumb ] end -->
+            <div class="main-body">
+                <div class="page-wrapper">
+                    <!-- [ Main Content ] start -->
+                    <div class="row">
+                        <div class="col-md-6 col-xl-5">
+
+                        {% for result in results %}
+                            {% if result.type == "ld203" %}
+                                <div class="card card-event">
+                                    <div class="card-block">
+                                        <div class="row align-items-center justify-content-center">
+                                            <div class="col">
+                                                <h5 class="f-w-300 align-items-center  m-b-1"><a href="/index/{{result.client}}">{{result.client}}</a> donated to <a href="/index/{{result.recipient_name}}">{{result.recipient_name}}</a></h5>
+                                            </div>
+                                            <div class="col-auto">
+                                                <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="row align-items-center justify-content-center">
+                                            <div class="col-6 text-left">
+                                                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                            </div>
+                                            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">LD-203</h6></div>
+
+                                        </div>
+
+
+
+
+
+                                <div class="card-block">
+                                    <div class="row align-items-center justify-content-center card-active">
+                                        <div class="col-6 mb-10">
+                                            <h6 class="text-center m-b-10"><span class="text-muted m-r-5">Likes:</span>35,098</h6>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-c-theme" role="progressbar" style="width:60%;height:6px;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-center  m-b-10"><span class="text-muted m-r-5">Dislikes:</span>3,539</h6>
+                                            <div class="progress">
+                                                <div class="progress-bar progress-c-theme2" role="progressbar" style="width:45%;height:6px;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                                    </div>
+                                </div>
+                            {% endif%}
+
+                            {% if result.type == "schedule_b" %}
+                                <div class="card card-event">
+                                    <div class="card-block">
+                                        <div class="row align-items-center justify-content-center">
+                                            <div class="col">
+                                                <h5 class="f-w-300 align-items-center  m-b-1"><a href="/index/{{result.committee_id}}">{{result.committee_id|committee_id_to_name}}</a> paid <a href="/index/{{result.contributor_name}}">{{result.contributor_name}}</a> </h5>
+                                            </div>
+                                            <div class="col-auto">
+                                                <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mx-0 mt-1">
+                                            <h6 class="text-muted f-12">{{result.transaction_type|schdb_code}} (<a href="/index/{{result.candidate_id}}">{{ result.candidate_id|smart_find }}</a>)</h6>
+                                        </div>
+
+                                        <div class="row align-items-center">
+                                            <div class="col-6 text-left">
+                                                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                            </div>
+                                            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Schedule B ({{result.transaction_type}})</h6></div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif%}
+
+                            {% if result.type == "congress_vote" %}
+                                <div class="card card-event">
+                                    <div class="card-block">
+                                        <div class="row align-items-center justify-content-center">
+                                            <div class="col">
+                                                <h5 class="f-w-300 align-items-center  m-b-1"><a href="/index/{{result.candidate_id}}">{{result.candidate_id|smart_find}}</a> voted on {{result.bill_id}}</h5>
+                                            </div>
+                                            <div class="col-auto">
+                                                <label class="label theme-bg2 text-white f-14 f-w-400 float-right">{{result.vote_status}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="row  mx-0 mt-2">
+                                            <h6 class="text-muted f-12">{{result.memo}}</h6>
+                                        </div>
+                                        <div class="row align-items-center">
+                                            <div class="col-6 text-left">
+                                                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                            </div>
+                                            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Congress Vote</h6></div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif%}
+
+                        {% endfor %}
+
+                        </div>
+                    </div>
+                    <!-- [ Main Content ] end -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
