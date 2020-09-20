@@ -50,8 +50,7 @@
                                                                 <div class="row align-items-center justify-content-center">
                                                                     <div class="col">
                                                                         <h5 class="f-w-300 align-items-center  m-b-1">
-                                                                            <a href="{{result.candidate_id|qurl}}">{{result.candidate_id|smart_find}}</a> voted on <a href="{{result.bill_id|qurl}}#votes">{{result.bill_id|upper}}</a>
-                                                                            <p1 class="f-10">[<a href="{{result.bill_id|govtrack_url}}">govtrack.us/{{result.bill_id}}</a>]</p1>
+                                                                            <a target="_blank" href="{{result.candidate_id|govtrack_cand_url}}">{{result.candidate_id|smart_find}}</a> voted on <a target="_blank" href="{{result.bill_id|govtrack_bill_url}}">{{result.bill_id|upper}}</a>
                                                                         </h5>
                                                                     </div>
                                                                     <div class="col-auto">
@@ -63,7 +62,7 @@
                                                                 </div>
                                                                 <div class="row align-items-center">
                                                                     <div class="col-6 text-left">
-                                                                        <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                                                        <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a target="_blank" href={{result.source}}>Source</a>)</h6>
                                                                     </div>
                                                                     <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Congress Vote</h6></div>
 
@@ -94,7 +93,7 @@
                                                             </div>
                                                             <div class="row align-items-center justify-content-center">
                                                                 <div class="col-6 text-left">
-                                                                    <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                                                    <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a target="_blank" href={{result.source}}>Source</a>)</h6>
                                                                 </div>
                                                                 <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">LD-203</h6></div>
 
@@ -130,7 +129,7 @@
 
                                                             <div class="row align-items-center">
                                                                 <div class="col-6 text-left">
-                                                                    <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                                                    <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a target="_blank" href={{result.source}}>Source</a>)</h6>
                                                                 </div>
                                                                 <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Schedule B ({{result.transaction_type}})</h6></div>
 

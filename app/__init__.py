@@ -203,13 +203,24 @@ def register_filters(app):
     def query_url(query):
         return f"/index?gquery={query}"
 
-    @app.template_filter('govtrack_url')
-    def govtrack_url(bill_id):
+    @app.template_filter('govtrack_bill_url')
+    def govtrack_bill_url(bill_id):
         try:
             congress, bill = bill_id.split("-")
             return f"https://www.govtrack.us/congress/bills/{bill}/{congress}"
         except:
             return f"https://www.govtrack.us/search?q={bill_id}"
+
+    @app.template_filter('govtrack_cand_url')
+    def govtrack_cand_url(id):
+        if id in bioguide_ids:
+            id = bioguide_ids[id]["id"]["govtrack"]
+        elif id in lis_ids:
+            id = lis_ids[id]["id"]["govtrack"]
+        else:
+            return f"index/q={id}"
+        return f"https://www.govtrack.us/congress/members/{id}"
+
 
     @app.template_filter('vote_color')
     def vote_color(vote_status):
