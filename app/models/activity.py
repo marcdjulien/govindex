@@ -152,12 +152,3 @@ class ActivityFeedback(db.Model):
     up_votes = db.Column(db.Integer)
     down_votes = db.Column(db.Integer)
 
-"""
-class ActivityTag(db.Model):
-    """Tracks the feedback of the activities."""
-    __tablename__ = 'activity_tag'
-
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String)
-    tag = db.Column(db.String)
-"""
