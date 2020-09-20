@@ -199,6 +199,31 @@ def register_filters(app):
     def schdb_code(code):
         return schedule_b_codes.get(code)
 
+    @app.template_filter('qurl')
+    def query_url(query):
+        return f"/index?gquery={query}"
+
+    @app.template_filter('govtrack_url')
+    def govtrack_url(bill_id):
+        try:
+            congress, bill = bill_id.split("-")
+            return f"https://www.govtrack.us/congress/bills/{bill}/{congress}"
+        except:
+            return f"https://www.govtrack.us/search?q={bill_id}"
+
+    @app.template_filter('vote_color')
+    def vote_color(vote_status):
+        mapping = {
+            "cv-no": ["no", "nay"],
+            "cv-yes": ["yes", "aye", "yea"],
+            "cv-nv":["not voting"]
+        }
+        for theme, status in mapping.items():
+            if vote_status.lower() in status:
+                return theme
+        return "cv-nv"
+
+
 def create_app(config):
     app = Flask(__name__, static_folder='base/static')
     app.config.from_object(config)

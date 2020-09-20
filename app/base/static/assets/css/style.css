@@ -138,7 +138,19 @@ strong {
 }
 
 .theme-bg2 {
-  background: linear-gradient(-135deg, #899FD4 0%, #A389D4 100%);
+  background: linear-gradient(-135deg, #899fd4 0%, #A389d4 100%);
+}
+
+.theme-cv-no {
+  background: linear-gradient(-135deg, #d84b0a 0%, #c32218 100%)
+}
+
+.theme-cv-yes {
+  background: linear-gradient(-135deg, #1de9b6 0%, #1dc4e9 100%);
+}
+
+.theme-cv-nv {
+  background: linear-gradient(-135deg, #899fd4 0%, #A389d4 100%);
 }
 
 /* ==========  card css start  =========== */

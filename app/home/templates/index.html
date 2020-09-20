@@ -15,111 +15,137 @@
             <div class="main-body">
                 <div class="page-wrapper">
                     <!-- [ Main Content ] start -->
-                    <div class="row">
-                        <div class="col-md-6 col-xl-5">
-
-                        {% for result in results %}
-                            {% if result.type == "ld203" %}
-                                <div class="card card-event">
-                                    <div class="card-block">
-                                        <div class="row align-items-center justify-content-center">
-                                            <div class="col">
-                                                <h5 class="f-w-300 align-items-center  m-b-1"><a href="/index/{{result.client}}">{{result.client}}</a> donated to <a href="/index/{{result.recipient_name}}">{{result.recipient_name}}</a></h5>
-                                            </div>
-                                            <div class="col-auto">
-                                                <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
-                                            </div>
-                                        </div>
-                                        <div class="row align-items-center justify-content-center">
-                                            <div class="col-6 text-left">
-                                                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
-                                            </div>
-                                            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">LD-203</h6></div>
-
-                                        </div>
-
-
-
-
-
-                                <div class="card-block">
-                                    <div class="row align-items-center justify-content-center card-active">
-                                        <div class="col-6 mb-10">
-                                            <h6 class="text-center m-b-10"><span class="text-muted m-r-5">Likes:</span>35,098</h6>
-                                            <div class="progress">
-                                                <div class="progress-bar progress-c-theme" role="progressbar" style="width:60%;height:6px;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <h6 class="text-center  m-b-10"><span class="text-muted m-r-5">Dislikes:</span>3,539</h6>
-                                            <div class="progress">
-                                                <div class="progress-bar progress-c-theme2" role="progressbar" style="width:45%;height:6px;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-md-7 col-xl-6">
+                            <form action="/index">
+                                <div class="row d-flex justify-content-center  align-items-center form-group">
+                                        <input type="text" id="gquery" name="gquery" class="form-control w-75" value="{{query or ''}}" placeholder="{{query}}">
+                                        <button type="submit" class="btn btn-primary position-sticky ml-2 mb-0">Submit</button>
                                 </div>
+                            </form>
+
+                            {% if results %}
+                            <p class="lead m-t-0">Found {{ results|length }} Results</p>
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active show" id="ld203-tab" data-toggle="tab" href="#ld203" role="tab" aria-controls="ld203" aria-selected="true">LD-203</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="votes-tab" data-toggle="tab" href="#votes" role="tab" aria-controls="votes" aria-selected="false">Votes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="schedule_b-tab" data-toggle="tab" href="#schedule_b" role="tab" aria-controls="schedule_b" aria-selected="false">Schedule B</a>
+                                </li>
+                            </ul>
 
 
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade" id="votes" role="tabpanel" aria-labelledby="votes-tab">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            {% if mapped_results["congress_vote"]|length != 0 %}
+                                                {% for result in mapped_results["congress_vote"] %}
+                                                        <div class="card card-event mb-2">
+                                                            <div class="card-block">
+                                                                <div class="row align-items-center justify-content-center">
+                                                                    <div class="col">
+                                                                        <h5 class="f-w-300 align-items-center  m-b-1">
+                                                                            <a href="{{result.candidate_id|qurl}}">{{result.candidate_id|smart_find}}</a> voted on <a href="{{result.bill_id|qurl}}#votes">{{result.bill_id|upper}}</a>
+                                                                            <p1 class="f-10">[<a href="{{result.bill_id|govtrack_url}}">govtrack.us/{{result.bill_id}}</a>]</p1>
+                                                                        </h5>
+                                                                    </div>
+                                                                    <div class="col-auto">
+                                                                        <label class="label theme-{{result.vote_status|vote_color}} text-white f-14 f-w-400 float-right">{{result.vote_status}}</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row  mx-0 mt-2">
+                                                                    <h6 class="text-muted f-13">{{result.memo}}</h6>
+                                                                </div>
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-6 text-left">
+                                                                        <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                                                    </div>
+                                                                    <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Congress Vote</h6></div>
 
-
-                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="lead m-t-0">No Votes</p>
+                                            {% endif%}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            {% endif%}
+                                <div class="tab-pane fade  active show" id="ld203" role="tabpanel" aria-labelledby="ld203-tab">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            {% if mapped_results["ld203"]|length != 0 %}
+                                                {% for result in mapped_results["ld203"] %}
+                                                    <div class="card card-event mb-2">
+                                                        <div class="card-block">
+                                                            <div class="row align-items-center justify-content-center">
+                                                                <div class="col">
+                                                                    <h5 class="f-w-300 align-items-center  m-b-1"><a href="{{result.client|qurl}}">{{result.client}}</a> donated to <a href="{{result.recipient_name|qurl}}">{{result.recipient_name}}</a></h5>
+                                                                </div>
+                                                                <div class="col-auto">
+                                                                    <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row align-items-center justify-content-center">
+                                                                <div class="col-6 text-left">
+                                                                    <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                                                </div>
+                                                                <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">LD-203</h6></div>
 
-                            {% if result.type == "schedule_b" %}
-                                <div class="card card-event">
-                                    <div class="card-block">
-                                        <div class="row align-items-center justify-content-center">
-                                            <div class="col">
-                                                <h5 class="f-w-300 align-items-center  m-b-1"><a href="/index/{{result.committee_id}}">{{result.committee_id|committee_id_to_name}}</a> paid <a href="/index/{{result.contributor_name}}">{{result.contributor_name}}</a> </h5>
-                                            </div>
-                                            <div class="col-auto">
-                                                <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mx-0 mt-1">
-                                            <h6 class="text-muted f-12">{{result.transaction_type|schdb_code}} (<a href="/index/{{result.candidate_id}}">{{ result.candidate_id|smart_find }}</a>)</h6>
-                                        </div>
-
-                                        <div class="row align-items-center">
-                                            <div class="col-6 text-left">
-                                                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
-                                            </div>
-                                            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Schedule B ({{result.transaction_type}})</h6></div>
-
-                                        </div>
-                                    </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="lead m-t-0">No LD-203s</p>
+                                            {% endif%}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            {% endif%}
+                                <div class="tab-pane fade" id="schedule_b" role="tabpanel" aria-labelledby="schedule_b-tab">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            {% if mapped_results["schedule_b"]|length != 0 %}
+                                                {% for result in mapped_results["schedule_b"] %}
+                                                    <div class="card card-event mb-2">
+                                                        <div class="card-block">
+                                                            <div class="row align-items-center justify-content-center">
+                                                                <div class="col">
+                                                                    <h5 class="f-w-300 align-items-center  m-b-1"><a href="{{result.committee_id|qurl}}">{{result.committee_id|committee_id_to_name}}</a> paid <a href="{{result.contributor_name|qurl}}">{{result.contributor_name}}</a> </h5>
+                                                                </div>
+                                                                <div class="col-auto">
+                                                                    <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
+                                                                </div>
+                                                            </div>
 
-                            {% if result.type == "congress_vote" %}
-                                <div class="card card-event">
-                                    <div class="card-block">
-                                        <div class="row align-items-center justify-content-center">
-                                            <div class="col">
-                                                <h5 class="f-w-300 align-items-center  m-b-1"><a href="/index/{{result.candidate_id}}">{{result.candidate_id|smart_find}}</a> voted on {{result.bill_id}}</h5>
-                                            </div>
-                                            <div class="col-auto">
-                                                <label class="label theme-bg2 text-white f-14 f-w-400 float-right">{{result.vote_status}}</label>
-                                            </div>
-                                        </div>
-                                        <div class="row  mx-0 mt-2">
-                                            <h6 class="text-muted f-12">{{result.memo}}</h6>
-                                        </div>
-                                        <div class="row align-items-center">
-                                            <div class="col-6 text-left">
-                                                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
-                                            </div>
-                                            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Congress Vote</h6></div>
+                                                            <div class="row mx-0 mt-1">
+                                                                <h6 class="text-muted f-12">{{result.transaction_type|schdb_code}} (<a href="{{result.candidate_id|qurl}}">{{ result.candidate_id|smart_find }}</a>)</h6>
+                                                            </div>
 
-                                        </div>
-                                    </div>
+                                                            <div class="row align-items-center">
+                                                                <div class="col-6 text-left">
+                                                                    <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a href={{result.source}}>Source</a>)</h6>
+                                                                </div>
+                                                                <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Schedule B ({{result.transaction_type}})</h6></div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="lead m-t-0">No Schedule Bs</p>
+                                            {% endif%}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            {% endif%}
-
-                        {% endfor %}
-
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- [ Main Content ] end -->

@@ -21,33 +21,39 @@ from app.models.activity import (
     ScheduleB
 )
 
-@blueprint.route('/index/<query>')
-#@login_required
-def index(query):
-    results = []
-    for ModelClass in (
-        CongressBill,
-        CongressBillAction,
-        CongressVote,
-        LobbyDisclosure1,
-        LobbyDisclosure2,
-        LobbyDisclosure203,
-        ScheduleA,
-        ScheduleB
-    ):
-        search_query = f"%{query}%"
-        results.extend(ModelClass.query.filter(ModelClass.tags.like(search_query)).all())
+@blueprint.route('/index')
+def index():
+    query = request.args.get("gquery")
+    all_results = []
+    mapped_results = {}
+    if query is not None:
+        for ModelClass in (
+            CongressBill,
+            CongressBillAction,
+            CongressVote,
+            LobbyDisclosure1,
+            LobbyDisclosure2,
+            LobbyDisclosure203,
+            ScheduleA,
+            ScheduleB
+        ):
+            search_query = f"%{query}%"
+            results = ModelClass.query.filter(ModelClass.tags.like(search_query)).all()
 
-    results = sorted(results, key=lambda x: x.date, reverse=True)
+            results = sorted(results, key=lambda x: x.date, reverse=True)
+            mapped_results[ModelClass.activity_type] = results
+
+            all_results.extend(results)
+
 
     return render_template('index.html',
                             segment='index',
-                            results=results,
-                            n=len(results))
+                            results=all_results,
+                            mapped_results=mapped_results,
+                            query=query)
 
 
 @blueprint.route('/<template>')
-#@login_required
 def route_template(template):
 
     try:
