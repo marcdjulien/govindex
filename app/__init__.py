@@ -221,6 +221,41 @@ def register_filters(app):
             return f"index/q={id}"
         return f"https://www.govtrack.us/congress/members/{id}"
 
+    @app.template_filter('next_page')
+    def next_page(params, n):
+        new_params = params.copy()
+        start = int(params["start"]) if "start" in params else 0
+        n_per_page = int(params["npp"]) if "npp" in params else 10
+        new_params["start"] = start + n_per_page
+        return new_params
+
+    @app.template_filter('prev_page')
+    def prev_page(params, n):
+        new_params = params.copy()
+        start = int(params["start"]) if "start" in params else 0
+        n_per_page = int(params["npp"]) if "npp" in params else 10
+        new_params["start"] = max(0, start - n_per_page)
+        return new_params
+
+    @app.template_filter('show_all')
+    def show_all(params, n):
+        new_params = params.copy()
+        start = int(params["start"]) if "start" in params else 0
+        n_per_page = int(params["npp"]) if "npp" in params else 10
+        new_params["start"] = 0
+        new_params["npp"] = n
+        return new_params
+
+    @app.template_filter('new_dsp_type')
+    def new_dsp_type(params, type):
+        new_params = params.copy()
+        new_params["dsp_type"] = type
+        if "start" in params:
+            del new_params["start"]
+        if "npp" in params:
+            del new_params["npp"]
+        return new_params
+
 
     @app.template_filter('vote_color')
     def vote_color(vote_status):
@@ -234,6 +269,14 @@ def register_filters(app):
                 return theme
         return "cv-nv"
 
+    @app.template_filter('activity_type_html')
+    def activity_type_html(activity_type):
+        mapping = {
+            "congress_vote": "includes/cards/congress_vote.html",
+            "schedule_b": "includes/cards/schedule_b.html",
+            "ld203": "includes/cards/ld203.html",
+        }
+        return mapping.get(activity_type, "includes/cards/none.html")
 
 def create_app(config):
     app = Flask(__name__, static_folder='base/static')

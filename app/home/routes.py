@@ -21,36 +21,66 @@ from app.models.activity import (
     ScheduleB
 )
 
+MODEL_CLASSES = [
+#    CongressBill,
+#    CongressBillAction,
+    CongressVote,
+#    LobbyDisclosure1,
+#    LobbyDisclosure2,
+    LobbyDisclosure203,
+#    ScheduleA,
+    ScheduleB
+]
+
 @blueprint.route('/index')
 def index():
-    query = request.args.get("gquery")
     all_results = []
-    mapped_results = {}
+    mapped_results = {MC.activity_type: [] for MC in MODEL_CLASSES}
+    search_models = set()
+
+    data_types = request.args.get("types", "all")
+    data_types = data_types.split(",")
+
+    search_models = [
+        MC
+        for MC in MODEL_CLASSES
+        if (MC.activity_type in data_types) or ("all" in data_types)
+    ]
+
+    query = request.args.get("gquery")
     if query is not None:
-        for ModelClass in (
-            CongressBill,
-            CongressBillAction,
-            CongressVote,
-            LobbyDisclosure1,
-            LobbyDisclosure2,
-            LobbyDisclosure203,
-            ScheduleA,
-            ScheduleB
-        ):
+        for MC in search_models:
             search_query = f"%{query}%"
-            results = ModelClass.query.filter(ModelClass.tags.like(search_query)).all()
+            results = MC.query.filter(MC.tags.like(search_query)).all()
 
             results = sorted(results, key=lambda x: x.date, reverse=True)
-            mapped_results[ModelClass.activity_type] = results
+            mapped_results[MC.activity_type] = results
 
             all_results.extend(results)
 
+    mapped_results["all"] = all_results
+
+    start = request.args.get("start", 0)
+    if str(start).isdigit():
+        start = max(0, int(start))
+    else:
+        start = 0
+
+    n_per_page = request.args.get("npp", 10)
+    if str(n_per_page).isdigit():
+        n_per_page = max(1, int(n_per_page))
+    else:
+        n_per_page = 10
+
+    display_table_type = request.args.get("dsp_type", data_types[0])
 
     return render_template('index.html',
                             segment='index',
-                            results=all_results,
                             mapped_results=mapped_results,
-                            query=query)
+                            query=query,
+                            start=start,
+                            n_per_page=n_per_page,
+                            display_table_type=display_table_type)
 
 
 @blueprint.route('/<template>')
