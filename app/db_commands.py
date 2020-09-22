@@ -14,7 +14,8 @@ from app.models.activity import (
     LobbyDisclosure2,
     LobbyDisclosure203,
     ScheduleA,
-    ScheduleB
+    ScheduleB,
+    Tag
 )
 
 # TODO: Create better primary keys instead of potential collisions with hashing
@@ -42,7 +43,7 @@ def get_files(source_dir, filename_regexs):
     return valid, invalid
 
 
-def publish_schdbs(db, source_dir):
+def publish_schdbs(db, source_dir, id_maps):
     filepaths, invalid_filepaths = get_files(source_dir, ScheduleB.source_file_regexs)
     assert filepaths, "No files found"
 
@@ -62,7 +63,16 @@ def publish_schdbs(db, source_dir):
                         raise ParseException("Failed to parse line {line_n} in {filepath}")
 
                     tags = [d.lower() for d in data if d]
-                    tags.extend(["schedule b", "fec", "contribution"])
+                    tags.extend(["schedule b", "fec", "contribution", "campaign"])
+                    other_id = data[15]
+                    cand_id = data[16]
+                    committee_id = data[0]
+                    if cand_id in id_maps["fec"]:
+                        tags.extend(id_maps["fec"][cand_id]["name"]["official_full"].split())
+                    if other_id in id_maps["fec"]:
+                        tags.extend(id_maps["fec"][other_id]["name"]["official_full"].split())
+                    if committee_id in id_maps["committee"]:
+                        tags.extend(id_maps["committee"][committee_id].split())
 
                     # Figure out the date
                     date_info = data[13]
@@ -128,7 +138,106 @@ def publish_schdbs(db, source_dir):
         print(f"Upladed {n} records")
 
 
-def publish_ld203s(db, source_dir):
+def publish_ld1s(db, source_dir, id_maps):
+    filepaths, invalid_filepaths = get_files(source_dir, LobbyDisclosure1.source_file_regexs)
+    assert filepaths, "No files found"
+
+    print("The following files were invald:")
+    for filepath in invalid_filepaths:
+        print(f"    -{filepath}")
+
+    n = 0
+    for filepath in filepaths:
+        with open(filepath, "r") as f:
+            try:
+                doc = xmltodict.parse(f.read())
+                info = json.loads(json.dumps(doc))["LOBBYINGDISCLOSURE1"]
+
+                base_info = {
+                    "form_id": os.path.basename(filepath).split('.')[0],
+                    "client": info["clientName"],
+                    "senate_id": info["senateID"] or "",
+                    "house_id": info["houseID"] or "",
+                    "specific_issues": info["specific_issues"]
+                }
+                for lobbyist_info in info["lobbyists"].get("lobbyist", []):
+                    person_info = {}
+                    name = " ".join(
+                        lobbyist_info[name_part]
+                        for name_part in ["lobbyistFirstName", "lobbyistLastName", "lobbyistSuffix"]
+                        if lobbyist_info[name_part] is not None
+                    )
+                    if not name:
+                        continue
+                    person_info["name"] = name
+                    person_info["covered_positions"] = lobbyist_info["coveredPosition"] or ""
+
+                    if info["organizationName"] is not None:
+                        person_info["registrant"] = info["organizationName"]
+                    else:
+                        person_info["registrant"] = person_info["name"]
+
+                    tags = list(base_info.values()) + list(person_info.values())
+                    tags.extend([
+                        info["registrantGeneralDescription"] or "",
+                        info["clientGeneralDescription"] or "",
+                        "ld1",
+                        "lobby",
+                        "registration"
+                    ])
+
+                    # Figure out the date
+                    try:
+                        date_info = info["effectiveDate"]
+                        date = parser.parse(date_info)
+                    except Exception:
+                        try:
+                            date_info = base_info["signedDate"]
+                            date = parser.parse(date_info)
+                        except Exception as e:
+                            print(f"Unable to determine date for {filepath}")
+                            print(e)
+                            date_info = "01011900"
+                            date = datetime.datetime.strptime(date_info, "%m%d%Y")
+
+                    common_info = {
+                        "date": date,
+                        "type": "ld1",
+                        "source": "https://disclosurespreview.house.gov/ld/ldxmlrelease/{}/{}/{}".format(
+                            info["reportYear"],
+                            info["reportType"],
+                            os.path.basename(filepath)
+                        ),
+                        "tags": ",".join(tags)
+                    }
+                    new_entry = LobbyDisclosure1(
+                        date=date,
+                        type=common_info["type"],
+                        source=common_info["source"],
+                        tags=common_info["tags"],
+                        form_id=base_info["form_id"],
+                        registrant=person_info["registrant"],
+                        client=base_info["client"],
+                        senate_id=base_info["senate_id"],
+                        house_id=base_info["house_id"],
+                        lobbyist_name=person_info["name"],
+                        last_updated=datetime.datetime.now(),
+                        specific_issues=base_info["specific_issues"],
+                        covered_positions=person_info["covered_positions"]
+                    )
+                    db.session.add(new_entry)
+                    n += 1
+            except Exception as e:
+                print(f"Failed to parse file {filepath}")
+                print(e)
+                raise
+                continue
+
+    db.session.commit()
+    print(f"Uploaded {n} records")
+
+
+def publish_ld203s(db, source_dir, id_maps):
     filepaths, invalid_filepaths = get_files(source_dir, LobbyDisclosure203.source_file_regexs)
     assert filepaths, "No files found"
 
@@ -168,7 +277,7 @@ def publish_ld203s(db, source_dir):
                 for contribution in contributions:
                     contribution_info = {
                         "type": contribution["type"],
-                        # TODO: Remove commas in all parsers
+                        # TODO: Remove commas from money in all parsers
                         "amount": contribution["amount"].replace(",", ""),
                         "contributor_name": contribution["contributorName"],
                         "recipient_name": contribution["recipientName"],
@@ -231,7 +340,7 @@ def publish_ld203s(db, source_dir):
     print(f"Uploaded {n} records")
 
 
-def publish_congress_votes(db, source_dir):
+def publish_congress_votes(db, source_dir, id_maps):
     filepaths, invalid_filepaths = get_files(source_dir, CongressVote.source_file_regexs)
     assert filepaths, "No files found"
 
@@ -261,6 +370,12 @@ def publish_congress_votes(db, source_dir):
                     for vote_info in info["votes"][vote_status]:
                         tags = list(session_info.values()) + list(vote_info.values())
                         tags.extend(["vote", "congress", vote_status])
+
+                        cand_id = vote_info["id"]
+                        if cand_id in id_maps["bioguide"]:
+                            tags.extend(id_maps["bioguide"][cand_id]["name"]["official_full"].split())
+                        if cand_id in id_maps["lis"]:
+                            tags.extend(id_maps["lis"][cand_id]["name"]["official_full"].split())
 
                         common_info = {
                             "date": parser.parse(info["date"]),
@@ -436,3 +551,39 @@ def publish_congress_bills(db, source_dir):
 
     db.session.commit()
     print(f"Upladed {n} records")
+
+
+MODEL_CLASSES = (
+    #ScheduleB,
+    #CongressVote,
+    #LobbyDisclosure203,
+    #CongressBill,
+    #CongressBillAction,
+    LobbyDisclosure1,
+    #LobbyDisclosure2,
+    #ScheduleA,
+)
+
+
+def publish_tags(db):
+    commit_i = 0
+    for MC in MODEL_CLASSES:
+        print(f"Tagging {MC.activity_type} ... ")
+        entries = MC.query.all()
+        n_total = len(entries)
+        for i, entry in enumerate(entries):
+            print(f"{i}/{n_total}")
+            data = entry.tags.split(",")
+            tags = set()
+            for d in data:
+                tags = tags.union([kw.lower() for kw in d.split()])
+
+            for keyword in tags:
+                new_tag_entry = Tag(id=f"{entry.activity_type}:{entry.id}",
+                                    keyword=keyword)
+                db.session.add(new_tag_entry)
+                commit_i += 1
+            if commit_i >= 1000000:
+                commit_i = 0
+                db.session.commit()
+    db.session.commit()

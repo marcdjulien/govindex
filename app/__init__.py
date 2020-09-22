@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 import os
+import json
 import yaml
 from dateutil import parser
 
@@ -20,9 +21,11 @@ login_manager = LoginManager()
 from app.db_commands import (
     publish_schdbs,
     publish_ld203s,
+    publish_ld1s,
     publish_congress_votes,
     publish_congress_bill_actions,
     publish_congress_bills,
+    publish_tags,
 )
 
 
@@ -44,91 +47,110 @@ govtrack_ids = {}
 lis_ids = {}
 bioguide_ids = {}
 fec_ids = {}
-
-# For now, assuming legislators and executive are mutually exclusive
-with open(CURRENT_LEGISLATORS_PATH, "r") as f1:
-    with open(EXECUTIVE_PATH, "r") as f2:
-        info = yaml.load(f1) + yaml.load(f2)
-        govtrack_ids = {
-            c["id"]["govtrack"]: {key: c[key] for key in c}
-            for c in info
-        }
-
-        bioguide_ids = {
-            c["id"]["bioguide"]: {key: c[key] for key in c}
-            for c in info
-            if "bioguide" in c["id"]
-        }
-
-        lis_ids = {
-            c["id"]["lis"]: {key: c[key] for key in c}
-            for c in info
-            if "lis" in c["id"]
-        }
-
-        for profile in govtrack_ids.values():
-            if "official_full" not in profile["name"]:
-                name = []
-                for key in ["first", "middle", "last"]:
-                    name.append(profile["name"].get(key, ""))
-                profile["name"]["official_full"] = " ".join(tok for tok in name if tok)
-
-        # Map FEC ID to profile
-        for gid in govtrack_ids:
-            for fec_id in govtrack_ids[gid]["id"].get("fec", []):
-                fec_ids[fec_id] = govtrack_ids[gid]
-
-
-# Parse FEC info
-# For now just 2020
-# TODO: parse all years
-with open("app/data/weball20.txt") as f:
-    for line in f:
-        data = line.split("|")
-        fec_id = data[0]
-        name = data[1]
-        try:
-            last, first = name.split(",", 1)
-        except:
-            try:
-                last, first = name.split(" ", 1)
-            except:
-                full_name = name
-                last = name
-                first = name
-        last = last.strip().capitalize()
-        first = first.strip().capitalize()
-        full_name = f"{first} {last}"
-
-        if fec_id not in fec_ids:
-            info = {
-                "id": {"fec":[fec_id]},
-                "name": {
-                    "first":first,
-                    "last":last,
-                    "official_full": full_name
-                }
-            }
-            fec_ids[fec_id] = info
-
-
-# Parse FEC info
-# For now just 2020
-# TODO: parse all years
 committee_ids = {}
-with open("app/data/cm20.txt") as f:
-    for line in f:
-        data = line.split("|")
-        fec_id = data[0]
-        name = data[1]
-        committee_ids[fec_id] = name
-
-
 schedule_b_codes = {}
-with open("app/data/schedule_b_codes.txt") as f:
-    for line in f:
-        data = line.split(" ", 1)
-        schedule_b_codes[data[0].strip()] = data[1].strip()
+
+id_maps = {
+    "govtrack": govtrack_ids,
+    "lis": lis_ids,
+    "bioguide": bioguide_ids,
+    "fec": fec_ids,
+    "committee": committee_ids,
+    "schedule_b_codes": schedule_b_codes,
+}
+
+
+def load_memory_data():
+    # TODO: Get rid of the globals
+    global govtrack_ids
+    global lis_ids
+    global bioguide_ids
+    global fec_ids
+    global committee_ids
+    global schedule_b_codes
+
+    print("Initializing memory data ...")
+    # For now, assuming legislators and executive are mutually exclusive
+    with open(CURRENT_LEGISLATORS_PATH, "r") as f1:
+        with open(EXECUTIVE_PATH, "r") as f2:
+            info = yaml.safe_load(f1) + yaml.safe_load(f2)
+            for c in info:
+                details = {key: c[key] for key in c}
+                if "govtrack" in c["id"]:
+                    govtrack_ids[c["id"]["govtrack"]] = details
+
+                if "bioguide" in c["id"]:
+                    bioguide_ids[c["id"]["bioguide"]] = details
+
+                if "lis" in c["id"]:
+                    lis_ids[c["id"]["lis"]] = details
+
+            for profile in govtrack_ids.values():
+                if "official_full" not in profile["name"]:
+                    name = []
+                    for key in ["first", "middle", "last"]:
+                        name.append(profile["name"].get(key, ""))
+                    profile["name"]["official_full"] = " ".join(tok for tok in name if tok)
+
+            # Map FEC ID to profile
+            for gid in govtrack_ids:
+                for fec_id in govtrack_ids[gid]["id"].get("fec", []):
+                    fec_ids[fec_id] = govtrack_ids[gid]
+
+
+    # Parse FEC info
+    # For now just 2020
+    # TODO: parse all years
+    with open("app/data/weball20.txt") as f:
+        for line in f:
+            data = line.split("|")
+            fec_id = data[0]
+            name = data[1]
+            try:
+                last, first = name.split(",", 1)
+            except:
+                try:
+                    last, first = name.split(" ", 1)
+                except:
+                    full_name = name
+                    last = name
+                    first = name
+            last = last.strip().capitalize()
+            first = first.strip().capitalize()
+            full_name = f"{first} {last}"
+
+            if fec_id not in fec_ids:
+                info = {
+                    "id": {"fec":[fec_id]},
+                    "name": {
+                        "first":first,
+                        "last":last,
+                        "official_full": full_name
+                    }
+                }
+                fec_ids[fec_id] = info
+
+
+    # Parse FEC info
+    # For now just 2020
+    # TODO: parse all years
+    with open("app/data/cm20.txt") as f:
+        for line in f:
+            data = line.split("|")
+            fec_id = data[0]
+            name = data[1]
+            committee_ids[fec_id] = name
+
+
+    with open("app/data/schedule_b_codes.txt") as f:
+        for line in f:
+            data = line.split(" ", 1)
+            schedule_b_codes[data[0].strip()] = data[1].strip()
+
+def memory_initialization(app):
+    @app.before_first_request
+    def load():
+        load_memory_data()
 
 def register_extensions(app):
     db.init_app(app)
@@ -156,7 +178,8 @@ def register_commands(app):
     def publish_data(type, source_dir):
         """Publish data to the database."""
         type_to_func = {
-            "schdb": publish_schdbs,
+            "schedule_b": publish_schdbs,
+            "ld1": publish_ld1s,
             "ld203": publish_ld203s,
             "congress_vote": publish_congress_votes,
             "congress_bill_action": publish_congress_bill_actions,
@@ -167,9 +190,15 @@ def register_commands(app):
             print(f"Invalid type: {type}")
             return
         else:
-            f(db, source_dir)
+            load_memory_data()
+            f(db, source_dir, id_maps)
+
+    @app.cli.command("tag-db")
+    def tag_db():
+        publish_tags(db)
 
     app.cli.add_command(publish_data)
+    app.cli.add_command(tag_db)
 
 def register_filters(app):
     @app.template_filter('date')
@@ -225,7 +254,7 @@ def register_filters(app):
     def next_page(params, n):
         new_params = params.copy()
         start = int(params["start"]) if "start" in params else 0
-        n_per_page = int(params["npp"]) if "npp" in params else 10
+        n_per_page = int(params["npp"]) if "npp" in params else 100
         new_params["start"] = start + n_per_page
         return new_params
 
@@ -233,7 +262,7 @@ def register_filters(app):
     def prev_page(params, n):
         new_params = params.copy()
         start = int(params["start"]) if "start" in params else 0
-        n_per_page = int(params["npp"]) if "npp" in params else 10
+        n_per_page = int(params["npp"]) if "npp" in params else 100
         new_params["start"] = max(0, start - n_per_page)
         return new_params
 
@@ -241,7 +270,7 @@ def register_filters(app):
     def show_all(params, n):
         new_params = params.copy()
         start = int(params["start"]) if "start" in params else 0
-        n_per_page = int(params["npp"]) if "npp" in params else 10
+        n_per_page = int(params["npp"]) if "npp" in params else 100
         new_params["start"] = 0
         new_params["npp"] = n
         return new_params
@@ -269,11 +298,16 @@ def register_filters(app):
                 return theme
         return "cv-nv"
 
+    @app.template_filter('to_dict')
+    def to_dict(data):
+        return json.loads(data)
+
     @app.template_filter('activity_type_html')
     def activity_type_html(activity_type):
         mapping = {
             "congress_vote": "includes/cards/congress_vote.html",
             "schedule_b": "includes/cards/schedule_b.html",
+            "ld1": "includes/cards/ld1.html",
             "ld203": "includes/cards/ld203.html",
         }
         return mapping.get(activity_type, "includes/cards/none.html")
@@ -286,5 +320,6 @@ def create_app(config):
     register_commands(app)
     register_filters(app)
     configure_database(app)
+    memory_initialization(app)
 
     return app

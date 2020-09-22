@@ -3,7 +3,9 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 import json
+from collections import defaultdict
 
+from app import db
 from app.home import blueprint
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
@@ -18,14 +20,15 @@ from app.models.activity import (
     LobbyDisclosure2,
     LobbyDisclosure203,
     ScheduleA,
-    ScheduleB
+    ScheduleB,
+    Tag
 )
 
 MODEL_CLASSES = [
 #    CongressBill,
 #    CongressBillAction,
     CongressVote,
-#    LobbyDisclosure1,
+    LobbyDisclosure1,
 #    LobbyDisclosure2,
     LobbyDisclosure203,
 #    ScheduleA,
@@ -49,16 +52,28 @@ def index():
 
     query = request.args.get("gquery")
     if query is not None:
+        tag_results = db.engine.execute("SELECT id FROM tag WHERE keyword IN ({tags}) GROUP BY id HAVING count(*) = {n}".format(
+            tags=", ".join(['"{}"'.format(q.lower()) for q in  query.split()]),
+            n=len(query.split()))
+        )
+
+        mapped_tag_results = defaultdict(list)
+        for tr in tag_results:
+            type, id = tr.id.split(":")
+            mapped_tag_results[type].append(id)
+
         for MC in search_models:
-            search_query = f"%{query}%"
-            results = MC.query.filter(MC.tags.like(search_query)).all()
+            results = []
+            for id in mapped_tag_results.get(MC.activity_type, []):
+                results.extend(MC.query.filter(MC.id == id).all())
 
-            results = sorted(results, key=lambda x: x.date, reverse=True)
             mapped_results[MC.activity_type] = results
-
             all_results.extend(results)
 
     mapped_results["all"] = all_results
+
+    for key, results in mapped_results.items():
+        mapped_results[key] = sorted(results, key=lambda x: x.date, reverse=True)
 
     start = request.args.get("start", 0)
     if str(start).isdigit():
@@ -66,7 +81,7 @@ def index():
     else:
         start = 0
 
-    n_per_page = request.args.get("npp", 10)
+    n_per_page = request.args.get("npp", 100)
     if str(n_per_page).isdigit():
         n_per_page = max(1, int(n_per_page))
     else:
@@ -80,7 +95,8 @@ def index():
                             query=query,
                             start=start,
                             n_per_page=n_per_page,
-                            display_table_type=display_table_type)
+                            display_table_type=display_table_type,
+                            test_result='{"key":"value"}')
 
 
 @blueprint.route('/<template>')

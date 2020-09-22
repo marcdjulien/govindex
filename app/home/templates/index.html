@@ -23,12 +23,15 @@
                                         <button type="submit" class="btn btn-primary position-sticky ml-2 mb-0">Submit</button>
                                 </div>
                             </form>
-
+                            {{ (test_result|to_dict)["key"] }}
                             {% if mapped_results["all"] %}
                             <p class="lead m-t-0">Found {{ mapped_results["all"]|length }} Results</p>
                             <ul class="nav nav-tabs" id="myTab" role="tablist">
                                 <li class="nav-item">
                                     <a class="nav-link {{ 'active show' if display_table_type == 'all' else ''}}" id="all-tab" href="/index?{{request.args|new_dsp_type('all')|urlencode}}" role="tab" aria-controls="all" aria-selected="{{ display_table_type == 'all' }}">All</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ 'active show' if display_table_type == 'ld1' else ''}}" id="ld1-tab" href="/index?{{request.args|new_dsp_type('ld1')|urlencode}}" role="tab" aria-controls="ld1" aria-selected="{{ display_table_type == 'ld1' }}">LD-1</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ 'active show' if display_table_type == 'ld203' else ''}}" id="ld203-tab" href="/index?{{request.args|new_dsp_type('ld203')|urlencode}}" role="tab" aria-controls="ld203" aria-selected="{{ display_table_type == 'ld203' }}">LD-203</a>
@@ -70,6 +73,21 @@
                                             {% endif%}
                                         </tbody>
                                         {% set activity_type = "congress_vote" %}
+                                        {% include 'includes/prev_next.html' %}
+                                    </table>
+                                </div>
+                                <div class="tab-pane fade {{ 'active show' if display_table_type == 'ld1' else ''}}" id="ld1" role="tabpanel" aria-labelledby="ld1-tab">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            {% if mapped_results["ld1"]|length != 0 %}
+                                                {% for result in mapped_results["ld1"][start:start+n_per_page] %}
+                                                    {% include 'includes/cards/ld1.html' %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="lead m-t-0">No LD-1s</p>
+                                            {% endif%}
+                                        </tbody>
+                                        {% set activity_type = "ld1" %}
                                         {% include 'includes/prev_next.html' %}
                                     </table>
                                 </div>

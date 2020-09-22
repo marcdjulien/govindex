@@ -65,10 +65,12 @@ class LobbyDisclosure1(ActivityMixin, db.Model):
     registrant = db.Column(db.String)
     senate_id = db.Column(db.String)
     house_id = db.Column(db.String)
-    lobbyists = db.Column(db.String)
+    lobbyist_name = db.Column(db.String)
     specific_issues = db.Column(db.String)
+    covered_positions = db.Column(db.String)
 
     activity_type = "ld1"
+    source_file_regexs = [r"\d+.xml"]
 
 
 class LobbyDisclosure2(ActivityMixin, db.Model):
@@ -85,6 +87,7 @@ class LobbyDisclosure2(ActivityMixin, db.Model):
     expenses = db.Column(db.Float)
 
     activity_type = "ld2"
+    source_file_regexs = [r"\d+.xml"]
 
 class LobbyDisclosure203(ActivityMixin, db.Model):
     __tablename__ = 'lobbying_disclosure_203'
@@ -152,3 +155,10 @@ class ActivityFeedback(db.Model):
     up_votes = db.Column(db.Integer)
     down_votes = db.Column(db.Integer)
 
+
+class Tag(db.Model):
+    """Tracks the feedback of the activities."""
+    __tablename__ = 'tag'
+
+    id = db.Column(db.String, primary_key=True)
+    keyword = db.Column(db.String, primary_key=True)
