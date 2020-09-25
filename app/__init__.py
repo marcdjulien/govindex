@@ -231,6 +231,10 @@ def register_filters(app):
     def query_url(query):
         return f"/index?gquery={query}"
 
+    @app.template_filter('kurl')
+    def query_url(query, key):
+        return f"/index?gquery=\"{key}\": \"{query}\""
+
     @app.template_filter('govtrack_bill_url')
     def govtrack_bill_url(bill_id):
         try:

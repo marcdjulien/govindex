@@ -10,7 +10,7 @@ from app import db
 from app.home import blueprint
 from flask import render_template, redirect, url_for, request
 from jinja2 import TemplateNotFound
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from app.models.activity import Result, Tag
 import orjson
@@ -21,18 +21,34 @@ def index():
     mapped_results = defaultdict(list)
     query = request.args.get("gquery")
     if query is not None:
+        print(f"QUERY: {query}")
         keywords = []
+
+        attrs = []
+        special_search_groups = re.search(r'(".+": ".+")', query)
+        if special_search_groups:
+            attrs.extend(special_search_groups.groups())
+            for ssg in special_search_groups.groups():
+                query = query.replace(ssg, "")
+
         grouped = re.search(r"\"(.+)\"", query)
         if grouped:
             keywords.extend(grouped.groups())
             for g in grouped.groups():
                 query = query.replace(g, "")
             query = query.replace("\"", "")
-        keywords.extend([q for q in  query.split()])
 
+        keywords.extend([q for q in query.split() if q])
+
+        print(f"KEYWORDS: {keywords}")
         q = Result.query
         for kw in keywords:
             q = q.filter(Result.tags.like(f"%{kw}%"))
+
+        print(f"ATTRS: {attrs}")
+        for a in attrs:
+            q = q.filter(Result.details.like(f"%{a}%"))
+
         q = q.order_by(Result.date.desc())
         results = q.all()
 

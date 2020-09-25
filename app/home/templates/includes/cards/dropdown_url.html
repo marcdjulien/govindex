@@ -8,19 +8,19 @@
         <a class="dropdown-item" href="{{ dropdown_url_text|qurl }}">GI Search</a>
         {% if dropdown_url_type == "lobby_registrant" or dropdown_url_type == "lobby_client" %}
             {% if result.house_id %}
-                <a class="dropdown-item" href="{{ result.house_id|qurl }}">House ID Search</a>
+                <a class="dropdown-item" href="{{ result.house_id|kurl('house_id') }}">House ID Search</a>
             {% endif %}
             {% if result.senate_id %}
-                <a class="dropdown-item" href="{{ result.senate_id|qurl }}">Senate ID Search</a>
+                <a class="dropdown-item" href="{{ result.senate_id|kurl('senate_id') }}">Senate ID Search</a>
             {% endif %}
         {% endif %}
 
         {% if dropdown_url_type == "schedule_b_committee" %}
-            <a class="dropdown-item" href="{{ result.committee_id|qurl }}">Committee ID Search</a>
+            <a class="dropdown-item" href="{{ result.committee_id|kurl('committee_id') }}">Committee ID Search</a>
         {% endif %}
 
         {% if dropdown_url_type == "schedule_b_recipient" %}
-            <a class="dropdown-item" href="{{ result.other_id|qurl }}">Recipient ID Search</a>
+            <a class="dropdown-item" href="{{ result.other_id|kurl('other_id') }}">Recipient ID Search</a>
         {% endif %}
 
         {% if dropdown_url_type == "candidate" %}
