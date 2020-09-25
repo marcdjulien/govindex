@@ -1,15 +1,34 @@
 from app import db
 
+class LocalFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    file_hash = db.Column(db.Integer)
+    file_path = db.Column(db.String)
+    date_parsed = db.Column(db.DateTime)
 
-class ActivityMixin(object):
+
+class Result(db.Model):
+    __tablename__ = "results"
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime)
     type = db.Column(db.String)
     source = db.Column(db.String)
     tags = db.Column(db.String)
     last_updated = db.Column(db.DateTime)
+    details = db.Column(db.String)
+
+    all_tags = db.relationship("Tag", lazy=True, backref=db.backref("result", lazy=False))
 
 
+class Tag(db.Model):
+    __tablename__ = 'tags'
+
+    id = db.Column(db.Integer, primary_key=True)
+    result_id = db.Column(db.String, db.ForeignKey(Result.id))
+    keyword = db.Column(db.String)
+
+
+"""
 class CongressVote(ActivityMixin, db.Model):
     __tablename__ = 'congress_vote'
 
@@ -148,17 +167,9 @@ class ScheduleB(ActivityMixin, db.Model):
 
 
 class ActivityFeedback(db.Model):
-    """Tracks the feedback of the activities."""
     __tablename__ = 'activity_feedback'
 
     id = db.Column(db.Integer, primary_key=True)
     up_votes = db.Column(db.Integer)
     down_votes = db.Column(db.Integer)
-
-
-class Tag(db.Model):
-    """Tracks the feedback of the activities."""
-    __tablename__ = 'tag'
-
-    id = db.Column(db.String, primary_key=True)
-    keyword = db.Column(db.String, primary_key=True)
+"""

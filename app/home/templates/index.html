@@ -19,33 +19,35 @@
                         <div class="col-md-7 col-xl-6">
                             <form action="/index">
                                 <div class="row d-flex justify-content-center  align-items-center form-group">
-                                        <input type="text" id="gquery" name="gquery" class="form-control w-75" value="{{query or ''}}" placeholder="{{query}}">
-                                        <button type="submit" class="btn btn-primary position-sticky ml-2 mb-0">Submit</button>
+                                        <input type="text" id="gquery" name="gquery" class="form-control w-50" value="{{query or ''}}" placeholder="{{query or 'Enter search query'}}">
+                                        <button type="submit" class="btn btn-primary position-sticky ml-2 mb-0">Search</button>
                                 </div>
                             </form>
-                            {{ (test_result|to_dict)["key"] }}
                             {% if mapped_results["all"] %}
                             <p class="lead m-t-0">Found {{ mapped_results["all"]|length }} Results</p>
                             <ul class="nav nav-tabs" id="myTab" role="tablist">
-                                <li class="nav-item">
+                                <li class="mx-auto px-auto nav-item">
                                     <a class="nav-link {{ 'active show' if display_table_type == 'all' else ''}}" id="all-tab" href="/index?{{request.args|new_dsp_type('all')|urlencode}}" role="tab" aria-controls="all" aria-selected="{{ display_table_type == 'all' }}">All</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ 'active show' if display_table_type == 'ld1' else ''}}" id="ld1-tab" href="/index?{{request.args|new_dsp_type('ld1')|urlencode}}" role="tab" aria-controls="ld1" aria-selected="{{ display_table_type == 'ld1' }}">LD-1</a>
+                                <li class="mx-auto px-auto nav-item">
+                                    <a class="nav-link {{ 'active show' if display_table_type == 'ld1' else ''}}" id="ld1-tab" href="/index?{{request.args|new_dsp_type('ld1')|urlencode}}" role="tab" aria-controls="ld1" aria-selected="{{ display_table_type == 'ld1' }}">LD-1 ({{mapped_results["ld1"]|length}})</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ 'active show' if display_table_type == 'ld203' else ''}}" id="ld203-tab" href="/index?{{request.args|new_dsp_type('ld203')|urlencode}}" role="tab" aria-controls="ld203" aria-selected="{{ display_table_type == 'ld203' }}">LD-203</a>
+                                <li class="mx-auto px-auto nav-item">
+                                    <a class="nav-link {{ 'active show' if display_table_type == 'ld2' else ''}}" id="ld2-tab" href="/index?{{request.args|new_dsp_type('ld2')|urlencode}}" role="tab" aria-controls="ld2" aria-selected="{{ display_table_type == 'ld2' }}">LD-2 ({{mapped_results["ld2"]|length}})</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ 'active show' if display_table_type == 'congress_vote' else ''}}" id="congress_vote-tab" href="/index?{{request.args|new_dsp_type('congress_vote')|urlencode}}" role="tab" aria-controls="congress_vote" aria-selected="{{ display_table_type == 'congress_vote' }}">Votes</a>
+                                <li class="mx-auto px-auto nav-item">
+                                    <a class="nav-link {{ 'active show' if display_table_type == 'ld203' else ''}}" id="ld203-tab" href="/index?{{request.args|new_dsp_type('ld203')|urlencode}}" role="tab" aria-controls="ld203" aria-selected="{{ display_table_type == 'ld203' }}">LD-203 ({{mapped_results["ld203"]|length}})</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ 'active show' if display_table_type == 'schedule_b' else ''}}" id="schedule_b-tab" href="/index?{{request.args|new_dsp_type('schedule_b')|urlencode}}" role="tab" aria-controls="schedule_b" aria-selected="{{ display_table_type == 'schedule_b' }}">Schedule B</a>
+                                <li class="mx-auto px-auto nav-item">
+                                    <a class="nav-link {{ 'active show' if display_table_type == 'congress_vote' else ''}}" id="congress_vote-tab" href="/index?{{request.args|new_dsp_type('congress_vote')|urlencode}}" role="tab" aria-controls="congress_vote" aria-selected="{{ display_table_type == 'congress_vote' }}">Votes ({{mapped_results["congress_vote"]|length}})</a>
+                                </li>
+                                <li class="mx-auto px-auto nav-item">
+                                    <a class="nav-link {{ 'active show' if display_table_type == 'schedule_b' else ''}}" id="schedule_b-tab" href="/index?{{request.args|new_dsp_type('schedule_b')|urlencode}}" role="tab" aria-controls="schedule_b" aria-selected="{{ display_table_type == 'schedule_b' }}">Schedule B ({{mapped_results["schedule_b"]|length}})</a>
                                 </li>
                             </ul>
 
 
-                            <div class="tab-content pb-1" id="myTabContent">
+                            <div class="tab-content pb-1 border-top" id="myTabContent">
                                 <div class="tab-pane fade {{ 'active show' if display_table_type == 'all' else ''}}" id="all" role="tabpanel" aria-labelledby="all-tab">
                                     <table class="table table-hover">
                                         <tbody>
@@ -91,6 +93,21 @@
                                         {% include 'includes/prev_next.html' %}
                                     </table>
                                 </div>
+                                <div class="tab-pane fade {{ 'active show' if display_table_type == 'ld2' else ''}}" id="ld2" role="tabpanel" aria-labelledby="ld2-tab">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            {% if mapped_results["ld2"]|length != 0 %}
+                                                {% for result in mapped_results["ld2"][start:start+n_per_page] %}
+                                                    {% include 'includes/cards/ld2.html' %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <p class="lead m-t-0">No LD-1s</p>
+                                            {% endif%}
+                                        </tbody>
+                                        {% set activity_type = "ld2" %}
+                                        {% include 'includes/prev_next.html' %}
+                                    </table>
+                                </div>
                                 <div class="tab-pane fade {{ 'active show' if display_table_type == 'ld203' else ''}}" id="ld203" role="tabpanel" aria-labelledby="ld203-tab">
                                     <table class="table table-hover">
                                         <tbody>
@@ -122,7 +139,7 @@
                                     </table>
                                 </div>
                             </div>
-                            {% else %}
+                            {% elif query %}
                              <p class="text-center lead m-t-0">Found {{ mapped_results["all"]|length }} Results</p>
                             {% endif %}
                         </div>

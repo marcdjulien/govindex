@@ -2,17 +2,27 @@
     <div class="card-block">
         <div class="row align-items-center justify-content-center">
             <div class="col">
-                <h5 class="f-w-300 align-items-center  m-b-1"><a href="{{result.client|qurl}}">{{result.client}}</a> donated to <a href="{{result.recipient_name|qurl}}">{{result.recipient_name}}</a></h5>
+                <h5 class="f-w-300 align-items-center  m-b-1">
+                        {% set dropdown_url_text = result.client %}
+                        {% set dropdown_url_type = "lobby_client" %}
+                        {% include 'includes/cards/dropdown_url.html' %}
+                        donated to
+                        {% set dropdown_url_text = result.recipient_name %}
+                        {% set dropdown_url_type = "lobby_recipient" %}
+                        {% include 'includes/cards/dropdown_url.html' %}
+                </h5>
             </div>
             <div class="col-auto">
                 <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
             </div>
         </div>
-        <div class="row align-items-center justify-content-center">
+        <div class="row align-items-center justify-content-left">
             <div class="col-6 text-left">
-                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a target="_blank" href={{result.source}}>Source</a>)</h6>
+                <h6 class="text-muted mt-4 mb-0">
+                    LD-203 | {{ result.date | date("%b %d, %Y") }} | <a target="_blank" href={{result.source}}>Source</a> | {% include 'includes/cards/share.html' %}
+                </h6>
             </div>
-            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">LD-203</h6></div>
+
 
         </div>
     </div>

@@ -4,7 +4,6 @@ Copyright (c) 2019 - present AppSeed.us
 """
 import click
 from flask import Flask, url_for
-from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
@@ -15,16 +14,11 @@ from dateutil import parser
 
 
 db = SQLAlchemy()
-login_manager = LoginManager()
 
 # Must be aster db is created.
 from app.db_commands import (
-    publish_schdbs,
-    publish_ld203s,
-    publish_ld1s,
-    publish_congress_votes,
-    publish_congress_bill_actions,
-    publish_congress_bills,
+    PUBLISH_MAP,
+    publish,
     publish_tags,
 )
 
@@ -154,7 +148,6 @@ def memory_initialization(app):
 
 def register_extensions(app):
     db.init_app(app)
-    login_manager.init_app(app)
 
 def register_blueprints(app):
     for module_name in ('base', 'home'):
@@ -177,15 +170,7 @@ def register_commands(app):
     @click.argument('source_dir')
     def publish_data(type, source_dir):
         """Publish data to the database."""
-        type_to_func = {
-            "schedule_b": publish_schdbs,
-            "ld1": publish_ld1s,
-            "ld203": publish_ld203s,
-            "congress_vote": publish_congress_votes,
-            "congress_bill_action": publish_congress_bill_actions,
-            "congress_bill": publish_congress_bills,
-        }
-        f = type_to_func.get(type)
+        f = PUBLISH_MAP.get(type)
         if f is None:
             print(f"Invalid type: {type}")
             return
@@ -193,12 +178,26 @@ def register_commands(app):
             load_memory_data()
             f(db, source_dir, id_maps)
 
+    @app.cli.command("publish")
+    @click.argument('filename')
+    def publish_all(filename):
+        """Publish data to the database."""
+        load_memory_data()
+        publish(db, filename, id_maps)
+
     @app.cli.command("tag-db")
     def tag_db():
         publish_tags(db)
 
+    @app.cli.command("cust")
+    def cust():
+        db.engine.execute("DELETE FROM results WHERE results.type == \"ld2\"")
+        db.session.commit()
+
     app.cli.add_command(publish_data)
+    app.cli.add_command(publish_all)
     app.cli.add_command(tag_db)
+    app.cli.add_command(cust)
 
 def register_filters(app):
     @app.template_filter('date')
@@ -207,7 +206,7 @@ def register_filters(app):
 
     @app.template_filter('smart_find')
     def smart_find(id):
-        for collection in [bioguide_ids, lis_ids, fec_ids]:
+        for collection in [bioguide_ids, lis_ids, fec_ids, govtrack_ids]:
             if id in collection:
                 return collection[id]["name"]["official_full"]
         return id
@@ -298,9 +297,10 @@ def register_filters(app):
                 return theme
         return "cv-nv"
 
-    @app.template_filter('to_dict')
-    def to_dict(data):
-        return json.loads(data)
+    @app.template_filter('result_url')
+    def result_url(result):
+        return "index?gquery={}".format(
+            result["tags"].replace(",", "+"))
 
     @app.template_filter('activity_type_html')
     def activity_type_html(activity_type):
@@ -308,6 +308,7 @@ def register_filters(app):
             "congress_vote": "includes/cards/congress_vote.html",
             "schedule_b": "includes/cards/schedule_b.html",
             "ld1": "includes/cards/ld1.html",
+            "ld2": "includes/cards/ld2.html",
             "ld203": "includes/cards/ld203.html",
         }
         return mapping.get(activity_type, "includes/cards/none.html")

@@ -1,0 +1,36 @@
+<!-- WARNING: span element required to keep jinja variables in scope correctly -->
+<span>
+    <a href="#" role="button" id="{{result.id}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    {{ dropdown_url_text }}
+    </a>
+
+    <div class="dropdown-menu text-center" aria-labelledby="{{result.id}}">
+        <a class="dropdown-item" href="{{ dropdown_url_text|qurl }}">GI Search</a>
+        {% if dropdown_url_type == "lobby_registrant" or dropdown_url_type == "lobby_client" %}
+            {% if result.house_id %}
+                <a class="dropdown-item" href="{{ result.house_id|qurl }}">House ID Search</a>
+            {% endif %}
+            {% if result.senate_id %}
+                <a class="dropdown-item" href="{{ result.senate_id|qurl }}">Senate ID Search</a>
+            {% endif %}
+        {% endif %}
+
+        {% if dropdown_url_type == "schedule_b_committee" %}
+            <a class="dropdown-item" href="{{ result.committee_id|qurl }}">Committee ID Search</a>
+        {% endif %}
+
+        {% if dropdown_url_type == "schedule_b_recipient" %}
+            <a class="dropdown-item" href="{{ result.other_id|qurl }}">Recipient ID Search</a>
+        {% endif %}
+
+        {% if dropdown_url_type == "candidate" %}
+            <a class="dropdown-item" target="_blank" href="{{result.candidate_id|govtrack_cand_url}}">GovTrack Profile</a>
+        {% endif %}
+
+        {% if dropdown_url_type == "bill" %}
+            <a class="dropdown-item" target="_blank" href="{{ result.bill_id|govtrack_bill_url }}">GovTrack Page</a>
+        {% endif %}
+
+        <a class="dropdown-item" target="_blank" href="https://www.google.com/search?q={{ dropdown_url_text }}">Google Search</a>
+    </div>
+</span>

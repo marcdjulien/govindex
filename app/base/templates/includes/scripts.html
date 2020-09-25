@@ -1,5 +1,26 @@
+<!-- Required Js -->
+<script src="/static/assets/js/vendor-all.min.js"></script>
+<script src="/static/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+<script src="/static/assets/js/pcoded.min.js"></script>
 
-    <!-- Required Js -->
-    <script src="/static/assets/js/vendor-all.min.js"></script>
-    <script src="/static/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/static/assets/js/pcoded.min.js"></script>
+<!-- Required Facebook -->
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v8.0&appId=123979527741849&autoLogAppEvents=1" nonce="u2TXQdCN"></script>
+
+<!-- Required  -->
+<script>window.twttr = (function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0],
+    t = window.twttr || {};
+  if (d.getElementById(id)) return t;
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://platform.twitter.com/widgets.js";
+  fjs.parentNode.insertBefore(js, fjs);
+
+  t._e = [];
+  t.ready = function(f) {
+    t._e.push(f);
+  };
+
+  return t;
+}(document, "script", "twitter-wjs"));</script>

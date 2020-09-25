@@ -1,19 +1,36 @@
 <div class="card card-event mb-2">
     <div class="card-block">
         <div class="row align-items-center justify-content-center">
+
             <div class="col">
-                <h5 class="f-w-300 align-items-center  m-b-1"><a href="{{result.client|qurl}}">{{result.client}}</a> registered with <a title="{{result.covvered_positions}}" href="{{result.lobbyist_name|qurl}}">{{result.lobbyist_name}}</a>
-                    (<a href="{{result.registrant|qurl}}">{{result.registrant}}</a>) to lobby on the following issues:</h5>
+                <h5 class="f-w-300 align-items-center  m-b-1">
+                    {% set dropdown_url_text = result.client %}
+                    {% set dropdown_url_type = "lobby_client" %}
+                    {% include 'includes/cards/dropdown_url.html' %}
+                    registered with
+
+                    <a title="{{result.covered_positions}}" href="{{result.lobbyist_name|qurl}}">{{result.lobbyist_name}}
+                    </a>
+
+                    (
+                        {% set dropdown_url_text = result.registrant %}
+                        {% set dropdown_url_type = "lobby_registrant" %}
+                        {% include 'includes/cards/dropdown_url.html' %}
+                    )
+                to lobby on the following issues:
+            </h5>
             </div>
+
         </div>
         <div class="row mx-0 mt-1">
             <h6 class="text-muted f-12">{{result.specific_issues}}</h6>
         </div>
-        <div class="row align-items-center justify-content-center">
+        <div class="row justify-content-left">
             <div class="col-6 text-left">
-                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a target="_blank" href={{result.source}}>Source</a>)</h6>
+                <h6 class="text-muted mt-4 mb-0">
+                    LD-1 | {{ result.date | date("%b %d, %Y") }} | <a target="_blank" href={{result.source}}>Source</a>
+                </h6>
             </div>
-            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">LD-1</h6></div>
 
         </div>
     </div>

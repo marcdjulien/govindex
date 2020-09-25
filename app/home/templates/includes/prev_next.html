@@ -1,16 +1,15 @@
-<div class="card-block ">
+
+{% set display_results = mapped_results[activity_type] %}
+<nav aria-label="Page navigation example">
     <div class="row align-items-center justify-content-center card-active m-t-10 m-b-0">
-        {% set display_results = mapped_results[activity_type] %}
-        <div class="col-3">
+        <ul class="pagination">
             {% if start != 0 %}
-                <h6 class="text-center f-18"><a href="index?{{request.args|prev_page(display_results|length)|urlencode}}" class="m-r-5">Previous</a></h6>
+                <li class="page-item"><a class="page-link" href="index?{{request.args|prev_page(display_results|length)|urlencode}}">Previous</a></li>
             {% endif %}
-        </div>
-        <div class="col-3">
+            <li class="page-item"><a class="page-link" href="index?{{request.args|show_all(display_results|length)|urlencode}}">Show All</a></li>
             {% if (start + n_per_page) < display_results|length %}
-                <h6 class="text-center f-18"><a href="index?{{request.args|next_page(display_results|length)|urlencode}}" class="m-r-5">Next</a></h6>
-                <h6 class="text-center f-18">(<a href="index?{{request.args|show_all(display_results|length)|urlencode}}" class="m-r-5">Show All</a>)</h6>
+                <li class="page-item"><a class="page-link" href="index?{{request.args|next_page(display_results|length)|urlencode}}">Next</a></li>
             {% endif %}
-        </div>
+        </ul>
     </div>
-</div>
+</nav>

@@ -10,3 +10,4 @@ xmltodict
 datetime
 dateutils
 pyyaml
+orjson

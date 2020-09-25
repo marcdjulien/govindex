@@ -2,7 +2,15 @@
     <div class="card-block">
         <div class="row align-items-center justify-content-center">
             <div class="col">
-                <h5 class="f-w-300 align-items-center  m-b-1"><a href="{{result.committee_id|qurl}}">{{result.committee_id|committee_id_to_name}}</a> paid <a href="{{result.contributor_name|qurl}}">{{result.contributor_name}}</a> </h5>
+                <h5 class="f-w-300 align-items-center  m-b-1">
+                        {% set dropdown_url_text = result.committee_id|committee_id_to_name %}
+                        {% set dropdown_url_type = "schedule_b_committee" %}
+                        {% include 'includes/cards/dropdown_url.html' %}
+                        donated to
+                        {% set dropdown_url_text = result.contributor_name %}
+                        {% set dropdown_url_type = "schedule_b_recipient" %}
+                        {% include 'includes/cards/dropdown_url.html' %}
+                </h5>
             </div>
             <div class="col-auto">
                 <label class="label theme-bg2 text-white f-14 f-w-400 float-right">${{result.amount}}</label>
@@ -13,12 +21,12 @@
             <h6 class="text-muted f-12">{{result.transaction_type|schdb_code}} (<a href="{{result.candidate_id|qurl}}">{{ result.candidate_id|smart_find }}</a>)</h6>
         </div>
 
-        <div class="row align-items-center">
-            <div class="col-6 text-left">
-                <h6 class="text-muted mt-4 mb-0">{{ result.date | date("%b %d, %Y") }} (<a target="_blank" href={{result.source}}>Source</a>)</h6>
+        <div class="row justify-content-left">
+            <div class="pl-3 text-left ">
+                <h6 class="text-muted mt-4 mb-0">
+                    Schedule B ({{result.transaction_type}})  |  {{ result.date | date("%b %d, %Y") }}  |  <a target="_blank" href={{result.source}}>Source</a> | {% include 'includes/cards/share.html' %}
+             </h6>
             </div>
-            <div class="col-6 text-right"><h6 class="text-muted mt-4 mb-0">Schedule B ({{result.transaction_type}})</h6></div>
-
         </div>
     </div>
 </div>
