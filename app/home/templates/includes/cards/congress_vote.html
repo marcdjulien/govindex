@@ -1,0 +1,36 @@
+<div class="card card-event mb-2">
+    <div class="card-block">
+        <div class="row align-items-center justify-content-center">
+            <div class="col">
+                <h5 class="f-w-300 align-items-center  m-b-1">
+                    {% if result.bill_id %}
+                        {% set dropdown_url_text = result.candidate_id|smart_find %}
+                        {% set dropdown_url_type = "candidate" %}
+                        {% include 'includes/cards/dropdown_url.html' %}
+                        voted
+                        [{% set dropdown_url_text = result.bill_id|upper %}
+                        {% set dropdown_url_type = "bill" %}
+                        {% include 'includes/cards/dropdown_url.html' %}]:
+                    {% else %}
+                        {% set dropdown_url_text = result.candidate_id|smart_find %}
+                        {% set dropdown_url_type = "candidate" %}
+                        {% include 'includes/cards/dropdown_url.html' %} voted:
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="col-auto">
+                <label class="label theme-{{result.vote_status|vote_color}} text-white f-14 f-w-400 float-right">{{result.vote_status}}</label>
+            </div>
+        </div>
+        <div class="row  mx-0 mt-2">
+            <h6 class="text-muted f-13">{{result.memo}}</h6>
+        </div>
+        <div class="row justify justify-content-left">
+            <div class="col-6 text-left">
+                <h6 class="text-muted mt-4 mb-0">
+                    Congress Vote | {{ result.date | date("%b %d, %Y") }} | <a target="_blank" href={{result.source}}>Source</a> | {% include 'includes/cards/share.html' %}
+                </h6>
+            </div>
+        </div>
+    </div>
+</div>

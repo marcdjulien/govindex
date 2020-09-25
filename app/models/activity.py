@@ -1,15 +1,34 @@
 from app import db
 
+class LocalFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    file_hash = db.Column(db.Integer)
+    file_path = db.Column(db.String)
+    date_parsed = db.Column(db.DateTime)
 
-class ActivityMixin(object):
+
+class Result(db.Model):
+    __tablename__ = "results"
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime)
     type = db.Column(db.String)
     source = db.Column(db.String)
     tags = db.Column(db.String)
     last_updated = db.Column(db.DateTime)
+    details = db.Column(db.String)
+
+    all_tags = db.relationship("Tag", lazy=True, backref=db.backref("result", lazy=False))
 
 
+class Tag(db.Model):
+    __tablename__ = 'tags'
+
+    id = db.Column(db.Integer, primary_key=True)
+    result_id = db.Column(db.String, db.ForeignKey(Result.id))
+    keyword = db.Column(db.String)
+
+
+"""
 class CongressVote(ActivityMixin, db.Model):
     __tablename__ = 'congress_vote'
 
@@ -65,10 +84,12 @@ class LobbyDisclosure1(ActivityMixin, db.Model):
     registrant = db.Column(db.String)
     senate_id = db.Column(db.String)
     house_id = db.Column(db.String)
-    lobbyists = db.Column(db.String)
+    lobbyist_name = db.Column(db.String)
     specific_issues = db.Column(db.String)
+    covered_positions = db.Column(db.String)
 
     activity_type = "ld1"
+    source_file_regexs = [r"\d+.xml"]
 
 
 class LobbyDisclosure2(ActivityMixin, db.Model):
@@ -85,6 +106,7 @@ class LobbyDisclosure2(ActivityMixin, db.Model):
     expenses = db.Column(db.Float)
 
     activity_type = "ld2"
+    source_file_regexs = [r"\d+.xml"]
 
 class LobbyDisclosure203(ActivityMixin, db.Model):
     __tablename__ = 'lobbying_disclosure_203'
@@ -145,10 +167,9 @@ class ScheduleB(ActivityMixin, db.Model):
 
 
 class ActivityFeedback(db.Model):
-    """Tracks the feedback of the activities."""
     __tablename__ = 'activity_feedback'
 
     id = db.Column(db.Integer, primary_key=True)
     up_votes = db.Column(db.Integer)
     down_votes = db.Column(db.Integer)
-
+"""
